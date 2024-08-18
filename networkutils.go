@@ -60,6 +60,7 @@ func handleSetCommand(conn net.Conn, words []string, memcache map[string]cacheVa
 	fmt.Printf("Memcache: %s\n", memcache)
 	if words[len(words)-2] != "noreply" {
 		fmt.Println("STORED")
+		conn.Write([]byte("STORED"))
 	}
 
 }

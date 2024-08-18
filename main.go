@@ -39,7 +39,7 @@ func handleConnection(conn net.Conn) {
 		fmt.Println(err)
 		return
 	}
-	fmt.Println("Received: %s", buf)
+	fmt.Printf("Received: %s\n", buf)
 }
 
 func evaluatePort() string {

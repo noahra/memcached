@@ -9,6 +9,7 @@ import (
 )
 
 type cacheValue struct {
+	key           string
 	flags         string
 	amountOfBytes string
 	dataBlock     string
@@ -23,10 +24,16 @@ func handleConnection(conn net.Conn, memcache map[string]cacheValue) {
 			return
 		}
 		words := strings.Fields(string(buf))
+		if len(words) == 0 {
+			continue // Skip if no command is received
+		}
 
-		if words[0] == "set" {
-			fmt.Println("reached")
+		switch words[0] {
+		case "set":
 			handleSetCommand(conn, words, memcache)
+		case "get":
+			handleGetCommand(conn, words[len(words)-2], memcache)
+		default:
 		}
 	}
 }
@@ -39,10 +46,18 @@ func evaluatePort() string {
 
 	return *portFromUser
 }
-
+func handleGetCommand(conn net.Conn, key string, memcache map[string]cacheValue) {
+	val, ok := memcache[key]
+	// If the key exists
+	if ok {
+		conn.Write([]byte("VALUE " + val.key + " " + val.flags + " " + val.amountOfBytes + "\n"))
+		conn.Write([]byte(val.dataBlock + "\n"))
+	}
+	conn.Write([]byte("END\r\n"))
+}
 func handleSetCommand(conn net.Conn, words []string, memcache map[string]cacheValue) {
-	key := words[1]
 	value := cacheValue{
+		key:           words[1],
 		flags:         words[2],
 		amountOfBytes: words[3],
 	}
@@ -54,13 +69,12 @@ func handleSetCommand(conn net.Conn, words []string, memcache map[string]cacheVa
 		fmt.Println(err)
 		return
 	}
-
 	value.dataBlock = string(buf)
-	memcache[key] = value
-	fmt.Printf("Memcache: %s\n", memcache)
+	memcache[value.key] = value
 	if words[len(words)-2] != "noreply" {
-		fmt.Println("STORED")
-		conn.Write([]byte("STORED"))
+		_, err := conn.Write([]byte("STORED\r\n"))
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
-
 }

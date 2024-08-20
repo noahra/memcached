@@ -11,10 +11,9 @@ const (
 )
 
 func main() {
-
 	memcache := make(map[string]cacheValue)
-
 	serverPort := evaluatePort()
+
 	ln, err := net.Listen(SERVER_TYPE, SERVER_HOST+":"+serverPort)
 	if err != nil {
 		fmt.Println(err)
@@ -29,5 +28,4 @@ func main() {
 		}
 		go handleConnection(conn, memcache)
 	}
-
 }

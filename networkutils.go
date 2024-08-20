@@ -11,6 +11,7 @@ import (
 type cacheValue struct {
 	key           string
 	flags         string
+	expiryTime    int
 	amountOfBytes string
 	dataBlock     string
 }
@@ -56,10 +57,12 @@ func handleGetCommand(conn net.Conn, key string, memcache map[string]cacheValue)
 	conn.Write([]byte("END\r\n"))
 }
 func handleSetCommand(conn net.Conn, words []string, memcache map[string]cacheValue) {
+	exptime, _ := strconv.Atoi(words[3])
 	value := cacheValue{
 		key:           words[1],
 		flags:         words[2],
-		amountOfBytes: words[3],
+		expiryTime:    exptime,
+		amountOfBytes: words[4],
 	}
 
 	byteSize, _ := strconv.Atoi(value.amountOfBytes)

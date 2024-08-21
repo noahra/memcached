@@ -11,7 +11,7 @@ const (
 )
 
 func main() {
-	memcache := make(map[string]cacheValue)
+	memcache := NewCache()
 	serverPort := evaluatePort()
 
 	ln, err := net.Listen(SERVER_TYPE, SERVER_HOST+":"+serverPort)

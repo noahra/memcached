@@ -18,7 +18,7 @@ func HandleConnection(conn net.Conn, memcache *cache.Cache) error {
 		}
 		words := strings.Fields(string(buf))
 		if len(words) < 2 {
-			continue // Skip if no command is received
+			continue //
 		}
 
 		command, err := commands.CreateCommand(words, conn)

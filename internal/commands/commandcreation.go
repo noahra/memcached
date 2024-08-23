@@ -37,6 +37,26 @@ func CreateCommand(words []string, conn net.Conn) (Command, error) {
 				noReply:    words[len(words)-1],
 				connection: conn,
 			}}, nil
+	case "append":
+		return &AppendCommand{
+			BaseCommand{
+				key:        words[1],
+				flags:      words[2],
+				expiryTime: parseExpiry(words[3]),
+				byteCount:  parseByteCount(words[4]),
+				noReply:    words[len(words)-1],
+				connection: conn,
+			}}, nil
+	case "prepend":
+		return &PrependCommand{
+			BaseCommand{
+				key:        words[1],
+				flags:      words[2],
+				expiryTime: parseExpiry(words[3]),
+				byteCount:  parseByteCount(words[4]),
+				noReply:    words[len(words)-1],
+				connection: conn,
+			}}, nil
 	case "replace":
 		return &ReplaceCommand{
 			BaseCommand: BaseCommand{

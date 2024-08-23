@@ -38,6 +38,21 @@ type GetCommand struct {
 	BaseCommand
 }
 
+type AppendCommand struct {
+	BaseCommand
+}
+
+type PrependCommand struct {
+	BaseCommand
+}
+
+func (cmd AppendCommand) GetBaseCommand() BaseCommand {
+	return cmd.BaseCommand
+}
+func (cmd PrependCommand) GetBaseCommand() BaseCommand {
+	return cmd.BaseCommand
+}
+
 func (cmd SetCommand) GetBaseCommand() BaseCommand {
 	return cmd.BaseCommand
 }
@@ -52,9 +67,60 @@ func (cmd ReplaceCommand) GetBaseCommand() BaseCommand {
 func (cmd AddCommand) GetBaseCommand() BaseCommand {
 	return cmd.BaseCommand
 }
+func (cmd PrependCommand) Execute(memcache *cache.Cache) error {
+	value := cacheValueParser(cmd)
+	dataBlock, err := parseDataBlock(value.AmountOfBytes, cmd)
+	if err != nil {
+		return fmt.Errorf("error: %w", err)
+	}
+
+	currentValue, _ := memcache.Get(value.Key)
+	value.DataBlock = dataBlock + currentValue.DataBlock
+	amountOfBytes := value.AmountOfBytes
+	value.AmountOfBytes = amountOfBytes + currentValue.AmountOfBytes
+	_, ok := memcache.Get(cmd.key)
+	if !ok {
+		writeNotStored(cmd.connection)
+	} else {
+		memcache.Set(value.Key, value)
+		if cmd.noReply != "noreply" {
+			_, err := cmd.connection.Write([]byte("STORED\r\n"))
+			if err != nil {
+				return fmt.Errorf("error: %w", err)
+			}
+		}
+	}
+	return nil
+}
+func (cmd AppendCommand) Execute(memcache *cache.Cache) error {
+	value := cacheValueParser(cmd)
+	dataBlock, err := parseDataBlock(value.AmountOfBytes, cmd)
+	if err != nil {
+		return fmt.Errorf("error: %w", err)
+	}
+
+	currentValue, _ := memcache.Get(value.Key)
+	value.DataBlock = currentValue.DataBlock + dataBlock
+	amountOfBytes := value.AmountOfBytes
+	value.AmountOfBytes = amountOfBytes + currentValue.AmountOfBytes
+	_, ok := memcache.Get(cmd.key)
+	if !ok {
+		writeNotStored(cmd.connection)
+	} else {
+		memcache.Set(value.Key, value)
+		if cmd.noReply != "noreply" {
+			_, err := cmd.connection.Write([]byte("STORED\r\n"))
+			if err != nil {
+				return fmt.Errorf("error: %w", err)
+			}
+		}
+	}
+	return nil
+}
+
 func (cmd SetCommand) Execute(memcache *cache.Cache) error {
 	value := cacheValueParser(cmd)
-	dataBlock, err := createBuffer(value.AmountOfBytes, cmd)
+	dataBlock, err := parseDataBlock(value.AmountOfBytes, cmd)
 	if err != nil {
 		return fmt.Errorf("error: %w", err)
 	}
@@ -73,7 +139,7 @@ func (cmd SetCommand) Execute(memcache *cache.Cache) error {
 
 func (cmd AddCommand) Execute(memcache *cache.Cache) error {
 	value := cacheValueParser(cmd)
-	dataBlock, err := createBuffer(value.AmountOfBytes, cmd)
+	dataBlock, err := parseDataBlock(value.AmountOfBytes, cmd)
 	if err != nil {
 		return fmt.Errorf("error: %w", err)
 	}
@@ -97,7 +163,7 @@ func (cmd AddCommand) Execute(memcache *cache.Cache) error {
 
 func (cmd ReplaceCommand) Execute(memcache *cache.Cache) error {
 	value := cacheValueParser(cmd)
-	dataBlock, err := createBuffer(value.AmountOfBytes, cmd)
+	dataBlock, err := parseDataBlock(value.AmountOfBytes, cmd)
 	if err != nil {
 		return fmt.Errorf("error: %w", err)
 	}
@@ -154,7 +220,7 @@ func cacheValueParser(command Command) cache.CacheValue {
 	return value
 }
 
-func createBuffer(amountOfBytes int, cmd Command) (string, error) {
+func parseDataBlock(amountOfBytes int, cmd Command) (string, error) {
 	byteSize := amountOfBytes
 	buf := make([]byte, byteSize)
 	_, err := cmd.GetBaseCommand().connection.Read(buf)

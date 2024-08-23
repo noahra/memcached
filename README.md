@@ -4,7 +4,7 @@ A simple implementation of a memcached server written in Go. This server support
 
 #### Features
 - Basic Caching Operations: set, get, add, replace, append, prepend
-- Concurrent Connections: Handles multiple client connections using Goroutines
+- Concurrent Connections: Handles multiple client connections 
 - Configurable Port: Specify the port for the server to listen on
 
 ##### Prerequisites
@@ -30,18 +30,12 @@ By default, the server will listen on port 11211. You can specify a different po
 ```bash
 go run cmd/server/main.go -port 12345
 ```
-##### Usage
-- Set a Value: set <key> <flags> <expiry> <byte-count> [noreply]
-- Get a Value: get <key>
-- Add a Value: add <key> <flags> <expiry> <byte-count> [noreply]
-- Replace a Value: replace <key> <flags> <expiry> <byte-count> [noreply]
-- Append to a Value: append <key> <flags> <expiry> <byte-count> [noreply]
-- Prepend to a Value: prepend <key> <flags> <expiry> <byte-count> [noreply]
+
 ##### Example
 To set a value:
 
 ```bash
-echo -e "set mykey 0 3600 9\r\nvaluehere\r\n" | nc localhost 11211
+echo -e "set mykey 0 3600 9\r\value\r\n" | nc localhost 11211
 ```
 To get the value:
 

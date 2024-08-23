@@ -1,7 +1,6 @@
-package commands
+package main
 
 import (
-	"memcached/pkg/cache"
 	"net"
 )
 
@@ -15,7 +14,7 @@ type BaseCommand struct {
 }
 
 type Command interface {
-	Execute(cache *cache.Cache) error
+	Execute(cache *Cache) error
 	GetBaseCommand() BaseCommand
 }
 

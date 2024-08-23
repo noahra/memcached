@@ -1,14 +1,12 @@
-package network
+package main
 
 import (
 	"fmt"
-	"memcached/pkg/cache"
-	"memcached/pkg/commands"
 	"net"
 	"strings"
 )
 
-func HandleConnection(conn net.Conn, memcache *cache.Cache) error {
+func HandleConnection(conn net.Conn, memcache *Cache) error {
 	for {
 		buf := make([]byte, 1024)
 		_, err := conn.Read(buf)
@@ -21,7 +19,7 @@ func HandleConnection(conn net.Conn, memcache *cache.Cache) error {
 			continue //
 		}
 
-		command, err := commands.CreateCommand(words, conn)
+		command, err := CreateCommand(words, conn)
 		if err != nil {
 			return fmt.Errorf("err: %w", err)
 		}

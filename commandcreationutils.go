@@ -1,8 +1,7 @@
-package commands
+package main
 
 import (
 	"fmt"
-	"memcached/pkg/cache"
 	"strconv"
 	"time"
 )
@@ -16,9 +15,9 @@ func parseByteCount(byteCountString string) int {
 	return int(byteCount)
 }
 
-func cacheValueParser(command Command) cache.CacheValue {
+func cacheValueParser(command Command) CacheValue {
 	baseCmd := command.GetBaseCommand()
-	value := cache.CacheValue{
+	value := CacheValue{
 		Key:           baseCmd.key,
 		Flags:         baseCmd.flags,
 		ExpiryTime:    baseCmd.expiryTime,

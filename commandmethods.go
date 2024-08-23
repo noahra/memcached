@@ -1,8 +1,7 @@
-package commands
+package main
 
 import (
 	"fmt"
-	"memcached/pkg/cache"
 	"strconv"
 )
 
@@ -30,7 +29,7 @@ func (cmd AddCommand) GetBaseCommand() BaseCommand {
 	return cmd.BaseCommand
 }
 
-func (cmd PrependCommand) Execute(memcache *cache.Cache) error {
+func (cmd PrependCommand) Execute(memcache *Cache) error {
 	value := cacheValueParser(cmd)
 	dataBlock, err := parseDataBlock(cmd)
 	if err != nil {
@@ -54,7 +53,7 @@ func (cmd PrependCommand) Execute(memcache *cache.Cache) error {
 	return nil
 }
 
-func (cmd AppendCommand) Execute(memcache *cache.Cache) error {
+func (cmd AppendCommand) Execute(memcache *Cache) error {
 	value := cacheValueParser(cmd)
 	dataBlock, err := parseDataBlock(cmd)
 
@@ -79,7 +78,7 @@ func (cmd AppendCommand) Execute(memcache *cache.Cache) error {
 	return nil
 }
 
-func (cmd SetCommand) Execute(memcache *cache.Cache) error {
+func (cmd SetCommand) Execute(memcache *Cache) error {
 	value := cacheValueParser(cmd)
 	dataBlock, err := parseDataBlock(cmd)
 	if err != nil {
@@ -96,7 +95,7 @@ func (cmd SetCommand) Execute(memcache *cache.Cache) error {
 	return nil
 }
 
-func (cmd AddCommand) Execute(memcache *cache.Cache) error {
+func (cmd AddCommand) Execute(memcache *Cache) error {
 	value := cacheValueParser(cmd)
 	dataBlock, err := parseDataBlock(cmd)
 	if err != nil {
@@ -118,7 +117,7 @@ func (cmd AddCommand) Execute(memcache *cache.Cache) error {
 	return nil
 }
 
-func (cmd ReplaceCommand) Execute(memcache *cache.Cache) error {
+func (cmd ReplaceCommand) Execute(memcache *Cache) error {
 	value := cacheValueParser(cmd)
 	dataBlock, err := parseDataBlock(cmd)
 	if err != nil {
@@ -140,10 +139,10 @@ func (cmd ReplaceCommand) Execute(memcache *cache.Cache) error {
 	return nil
 }
 
-func (cmd GetCommand) Execute(memcache *cache.Cache) error {
+func (cmd GetCommand) Execute(memcache *Cache) error {
 	val, ok := memcache.Get(cmd.key)
 	if ok {
-		if !cache.ExpiryCheck(val) {
+		if !ExpiryCheck(val) {
 			cmd.connection.Write([]byte("VALUE " + val.Key + " " + val.Flags + " " + strconv.Itoa(val.AmountOfBytes) + "\n"))
 			cmd.connection.Write([]byte(val.DataBlock + "\n"))
 		} else {

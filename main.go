@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-	"memcached/pkg/cache"
-	"memcached/pkg/network"
 	"net"
 )
 
@@ -13,8 +11,8 @@ const (
 )
 
 func main() {
-	memcache := cache.NewCache()
-	serverPort := network.EvaluatePort()
+	memcache := NewCache()
+	serverPort := EvaluatePort()
 
 	ln, err := net.Listen(SERVER_TYPE, SERVER_HOST+":"+serverPort)
 	if err != nil {
@@ -29,7 +27,7 @@ func main() {
 			return
 		}
 		go func() {
-			err := network.HandleConnection(conn, memcache)
+			err := HandleConnection(conn, memcache)
 			if err != nil {
 				fmt.Printf("error: %v", err)
 			}

@@ -1,9 +1,9 @@
 package main
 
 import (
-	"ccmemcached/internal/cache"
-	"ccmemcached/internal/network"
 	"fmt"
+	"memcached/pkg/cache"
+	"memcached/pkg/network"
 	"net"
 )
 

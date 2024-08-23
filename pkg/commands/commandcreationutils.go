@@ -1,8 +1,8 @@
 package commands
 
 import (
-	"ccmemcached/internal/cache"
 	"fmt"
+	"memcached/pkg/cache"
 	"strconv"
 	"time"
 )

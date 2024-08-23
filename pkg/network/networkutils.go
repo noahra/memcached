@@ -1,9 +1,9 @@
 package network
 
 import (
-	"ccmemcached/internal/cache"
-	"ccmemcached/internal/commands"
 	"fmt"
+	"memcached/pkg/cache"
+	"memcached/pkg/commands"
 	"net"
 	"strings"
 )

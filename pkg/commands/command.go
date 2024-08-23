@@ -1,7 +1,7 @@
 package commands
 
 import (
-	"ccmemcached/internal/cache"
+	"memcached/pkg/cache"
 	"net"
 )
 

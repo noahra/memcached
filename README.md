@@ -1,4 +1,4 @@
-## Memcached Server in Go
+## Memcached Server
 
 A simple implementation of a memcached server written in Go. This server supports basic caching operations such as set, get, add, replace, append, and prepend.
 

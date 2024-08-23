@@ -3,48 +3,8 @@ package commands
 import (
 	"ccmemcached/internal/cache"
 	"fmt"
-	"net"
 	"strconv"
-	"time"
 )
-
-type BaseCommand struct {
-	key        string
-	flags      string
-	expiryTime float64
-	byteCount  int
-	noReply    string
-	connection net.Conn
-}
-
-type Command interface {
-	Execute(cache *cache.Cache) error
-	GetBaseCommand() BaseCommand
-}
-
-type SetCommand struct {
-	BaseCommand
-}
-
-type AddCommand struct {
-	BaseCommand
-}
-
-type ReplaceCommand struct {
-	BaseCommand
-}
-
-type GetCommand struct {
-	BaseCommand
-}
-
-type AppendCommand struct {
-	BaseCommand
-}
-
-type PrependCommand struct {
-	BaseCommand
-}
 
 func (cmd AppendCommand) GetBaseCommand() BaseCommand {
 	return cmd.BaseCommand
@@ -69,7 +29,7 @@ func (cmd AddCommand) GetBaseCommand() BaseCommand {
 }
 func (cmd PrependCommand) Execute(memcache *cache.Cache) error {
 	value := cacheValueParser(cmd)
-	dataBlock, err := parseDataBlock(value.AmountOfBytes, cmd)
+	dataBlock, err := parseDataBlock(cmd)
 	if err != nil {
 		return fmt.Errorf("error: %w", err)
 	}
@@ -94,7 +54,7 @@ func (cmd PrependCommand) Execute(memcache *cache.Cache) error {
 }
 func (cmd AppendCommand) Execute(memcache *cache.Cache) error {
 	value := cacheValueParser(cmd)
-	dataBlock, err := parseDataBlock(value.AmountOfBytes, cmd)
+	dataBlock, err := parseDataBlock(cmd)
 	if err != nil {
 		return fmt.Errorf("error: %w", err)
 	}
@@ -120,7 +80,7 @@ func (cmd AppendCommand) Execute(memcache *cache.Cache) error {
 
 func (cmd SetCommand) Execute(memcache *cache.Cache) error {
 	value := cacheValueParser(cmd)
-	dataBlock, err := parseDataBlock(value.AmountOfBytes, cmd)
+	dataBlock, err := parseDataBlock(cmd)
 	if err != nil {
 		return fmt.Errorf("error: %w", err)
 	}
@@ -139,7 +99,7 @@ func (cmd SetCommand) Execute(memcache *cache.Cache) error {
 
 func (cmd AddCommand) Execute(memcache *cache.Cache) error {
 	value := cacheValueParser(cmd)
-	dataBlock, err := parseDataBlock(value.AmountOfBytes, cmd)
+	dataBlock, err := parseDataBlock(cmd)
 	if err != nil {
 		return fmt.Errorf("error: %w", err)
 	}
@@ -163,7 +123,7 @@ func (cmd AddCommand) Execute(memcache *cache.Cache) error {
 
 func (cmd ReplaceCommand) Execute(memcache *cache.Cache) error {
 	value := cacheValueParser(cmd)
-	dataBlock, err := parseDataBlock(value.AmountOfBytes, cmd)
+	dataBlock, err := parseDataBlock(cmd)
 	if err != nil {
 		return fmt.Errorf("error: %w", err)
 	}
@@ -197,36 +157,4 @@ func (cmd GetCommand) Execute(memcache *cache.Cache) error {
 		cmd.connection.Write([]byte("END\r\n"))
 	}
 	return nil
-}
-
-func (cmd *BaseCommand) readDataBlock() (string, error) {
-	buf := make([]byte, cmd.byteCount)
-	_, err := cmd.connection.Read(buf)
-	if err != nil {
-		return "", fmt.Errorf("error reading data block: %w", err)
-	}
-	return string(buf), nil
-}
-
-func cacheValueParser(command Command) cache.CacheValue {
-	baseCmd := command.GetBaseCommand()
-	value := cache.CacheValue{
-		Key:           baseCmd.key,
-		Flags:         baseCmd.flags,
-		ExpiryTime:    baseCmd.expiryTime,
-		AmountOfBytes: baseCmd.byteCount,
-		CreatedAt:     time.Now(),
-	}
-	return value
-}
-
-func parseDataBlock(amountOfBytes int, cmd Command) (string, error) {
-	byteSize := amountOfBytes
-	buf := make([]byte, byteSize)
-	_, err := cmd.GetBaseCommand().connection.Read(buf)
-	if err != nil {
-		return "", fmt.Errorf("error: %w", err)
-	}
-
-	return string(buf), nil
 }

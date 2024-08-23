@@ -3,7 +3,6 @@ package commands
 import (
 	"fmt"
 	"net"
-	"strconv"
 )
 
 func CreateCommand(words []string, conn net.Conn) (Command, error) {
@@ -72,16 +71,6 @@ func CreateCommand(words []string, conn net.Conn) (Command, error) {
 		return nil, fmt.Errorf("unknown command: %s", commandType)
 	}
 }
-
-func parseExpiry(expiryTimeString string) float64 {
-	expiryTime, _ := strconv.ParseFloat(expiryTimeString, 64)
-	return expiryTime
-}
-func parseByteCount(byteCountString string) int {
-	byteCount, _ := strconv.ParseInt(byteCountString, 10, 32)
-	return int(byteCount)
-}
-
 func writeNotStored(conn net.Conn) {
 	_, err := conn.Write([]byte("NOT_STORED\r\n"))
 	if err != nil {

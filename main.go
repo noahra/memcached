@@ -28,6 +28,11 @@ func main() {
 			fmt.Println(err)
 			return
 		}
-		go network.HandleConnection(conn, memcache)
+		go func() {
+			err := network.HandleConnection(conn, memcache)
+			if err != nil {
+				fmt.Printf("error: %w", err)
+			}
+		}()
 	}
 }

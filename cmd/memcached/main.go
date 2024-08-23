@@ -31,7 +31,7 @@ func main() {
 		go func() {
 			err := network.HandleConnection(conn, memcache)
 			if err != nil {
-				fmt.Printf("error: %w", err)
+				fmt.Printf("error: %v", err)
 			}
 		}()
 	}

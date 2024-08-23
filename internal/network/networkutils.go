@@ -1,12 +1,14 @@
-package main
+package network
 
 import (
+	"ccmemcached/internal/cache"
+	"ccmemcached/internal/commands"
 	"fmt"
 	"net"
 	"strings"
 )
 
-func handleConnection(conn net.Conn, memcache *Cache) error {
+func HandleConnection(conn net.Conn, memcache *cache.Cache) error {
 	for {
 		buf := make([]byte, 1024)
 		_, err := conn.Read(buf)
@@ -19,7 +21,7 @@ func handleConnection(conn net.Conn, memcache *Cache) error {
 			continue // Skip if no command is received
 		}
 
-		command, err := createCommand(words, conn)
+		command, err := commands.CreateCommand(words, conn)
 		if err != nil {
 			return fmt.Errorf("err: %w", err)
 		}

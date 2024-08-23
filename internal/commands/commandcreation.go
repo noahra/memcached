@@ -1,4 +1,4 @@
-package main
+package commands
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"strconv"
 )
 
-func createCommand(words []string, conn net.Conn) (Command, error) {
+func CreateCommand(words []string, conn net.Conn) (Command, error) {
 	commandType := words[0]
 	switch commandType {
 	case "get":

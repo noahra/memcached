@@ -1,6 +1,8 @@
 package main
 
 import (
+	"ccmemcached/internal/cache"
+	"ccmemcached/internal/network"
 	"fmt"
 	"net"
 )
@@ -11,8 +13,8 @@ const (
 )
 
 func main() {
-	memcache := NewCache()
-	serverPort := evaluatePort()
+	memcache := cache.NewCache()
+	serverPort := network.EvaluatePort()
 
 	ln, err := net.Listen(SERVER_TYPE, SERVER_HOST+":"+serverPort)
 	if err != nil {
@@ -26,6 +28,6 @@ func main() {
 			fmt.Println(err)
 			return
 		}
-		go handleConnection(conn, memcache)
+		go network.HandleConnection(conn, memcache)
 	}
 }

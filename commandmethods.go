@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"strconv"
 )
 
 func (cmd AppendCommand) GetBaseCommand() BaseCommand {
@@ -143,7 +142,7 @@ func (cmd GetCommand) Execute(memcache *Cache) error {
 	val, ok := memcache.Get(cmd.key)
 	if ok {
 		if !ExpiryCheck(val) {
-			cmd.connection.Write([]byte("VALUE " + val.Key + " " + val.Flags + " " + strconv.Itoa(val.AmountOfBytes) + "\n"))
+			cmd.connection.Write([]byte(fmt.Sprintf("VALUE %s %d %d\n", val.Key, val.Flags, val.AmountOfBytes)))
 			cmd.connection.Write([]byte(val.DataBlock + "\n"))
 		} else {
 			memcache.Delete(cmd.key)

@@ -6,7 +6,7 @@ import (
 
 type BaseCommand struct {
 	key        string
-	flags      string
+	flags      int64
 	expiryTime float64
 	byteCount  int
 	noReply    string

@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net"
+	"strconv"
 )
 
 func CreateCommand(words []string, conn net.Conn) (Command, error) {
@@ -16,56 +17,44 @@ func CreateCommand(words []string, conn net.Conn) (Command, error) {
 			},
 		}, nil
 	case "set":
+		baseCommand, err := createBaseCommand(words, conn)
+		if err != nil {
+			return nil, err
+		}
 		return &SetCommand{
-			BaseCommand{
-				key:        words[1],
-				flags:      words[2],
-				expiryTime: parseExpiry(words[3]),
-				byteCount:  parseByteCount(words[4]),
-				noReply:    words[len(words)-2],
-				connection: conn,
-			},
+			baseCommand,
 		}, nil
 	case "add":
+		baseCommand, err := createBaseCommand(words, conn)
+		if err != nil {
+			return nil, err
+		}
 		return &AddCommand{
-			BaseCommand{
-				key:        words[1],
-				flags:      words[2],
-				expiryTime: parseExpiry(words[3]),
-				byteCount:  parseByteCount(words[4]),
-				noReply:    words[len(words)-1],
-				connection: conn,
-			}}, nil
+			baseCommand,
+		}, nil
 	case "append":
+		baseCommand, err := createBaseCommand(words, conn)
+		if err != nil {
+			return nil, err
+		}
 		return &AppendCommand{
-			BaseCommand{
-				key:        words[1],
-				flags:      words[2],
-				expiryTime: parseExpiry(words[3]),
-				byteCount:  parseByteCount(words[4]),
-				noReply:    words[len(words)-1],
-				connection: conn,
-			}}, nil
+			baseCommand,
+		}, nil
 	case "prepend":
+		baseCommand, err := createBaseCommand(words, conn)
+		if err != nil {
+			return nil, err
+		}
 		return &PrependCommand{
-			BaseCommand{
-				key:        words[1],
-				flags:      words[2],
-				expiryTime: parseExpiry(words[3]),
-				byteCount:  parseByteCount(words[4]),
-				noReply:    words[len(words)-1],
-				connection: conn,
-			}}, nil
+			baseCommand,
+		}, nil
 	case "replace":
+		baseCommand, err := createBaseCommand(words, conn)
+		if err != nil {
+			return nil, err
+		}
 		return &ReplaceCommand{
-			BaseCommand: BaseCommand{
-				key:        words[1],
-				flags:      words[2],
-				expiryTime: parseExpiry(words[3]),
-				byteCount:  parseByteCount(words[4]),
-				noReply:    words[len(words)-1],
-				connection: conn,
-			},
+			baseCommand,
 		}, nil
 	default:
 		return nil, fmt.Errorf("unknown command: %s", commandType)
@@ -76,4 +65,19 @@ func writeNotStored(conn net.Conn) {
 	if err != nil {
 		fmt.Println(err)
 	}
+}
+
+func createBaseCommand(words []string, conn net.Conn) (BaseCommand, error) {
+	flags, err := strconv.ParseInt(words[2], 10, 32)
+	if err != nil {
+		return BaseCommand{}, fmt.Errorf("could not parse flags from command: %w", err)
+	}
+	return BaseCommand{
+		key:        words[1],
+		flags:      flags,
+		expiryTime: parseExpiry(words[3]),
+		byteCount:  parseByteCount(words[4]),
+		noReply:    words[len(words)-1],
+		connection: conn,
+	}, nil
 }

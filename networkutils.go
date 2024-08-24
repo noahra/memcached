@@ -14,9 +14,10 @@ func HandleConnection(conn net.Conn, memcache *Cache) error {
 			return fmt.Errorf("err: %w", err)
 
 		}
+
 		words := strings.Fields(string(buf))
 		if len(words) < 2 {
-			continue //
+			return fmt.Errorf("err: not enough words")
 		}
 
 		command, err := CreateCommand(words, conn)

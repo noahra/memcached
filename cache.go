@@ -7,7 +7,7 @@ import (
 
 type CacheValue struct {
 	Key           string
-	Flags         string
+	Flags         int64
 	ExpiryTime    float64
 	AmountOfBytes int
 	DataBlock     string

@@ -33,17 +33,17 @@ type Cache struct {
 	mu    sync.RWMutex
 }
 
-func (cache Cache) Get(key string) (CacheValue, bool) {
+func (cache *Cache) Get(key string) (CacheValue, bool) {
 	val, ok := cache.store[key]
 	return val, ok
 }
 
-func (cache Cache) Set(key string, value CacheValue) {
+func (cache *Cache) Set(key string, value CacheValue) {
 	cache.mu.Lock()
 	cache.store[key] = value
 	cache.mu.Unlock()
 }
-func (cache Cache) Delete(key string) {
+func (cache *Cache) Delete(key string) {
 	cache.mu.Lock()
 	delete(cache.store, key)
 	cache.mu.Unlock()

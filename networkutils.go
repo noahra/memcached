@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"net"
 	"strings"
 )
@@ -11,7 +10,7 @@ func HandleConnection(conn net.Conn, memcache *Cache) error {
 		buf := make([]byte, 1024)
 		_, err := conn.Read(buf)
 		if err != nil {
-			return fmt.Errorf("err: %w", err)
+			return err
 
 		}
 
@@ -22,11 +21,11 @@ func HandleConnection(conn net.Conn, memcache *Cache) error {
 
 		command, err := CreateCommand(words, conn)
 		if err != nil {
-			return fmt.Errorf("err: %w", err)
+			return err
 		}
 		err = command.Execute(memcache)
 		if err != nil {
-			return fmt.Errorf("err: %w", err)
+			return err
 		}
 	}
 }

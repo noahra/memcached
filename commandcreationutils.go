@@ -6,9 +6,10 @@ import (
 	"time"
 )
 
-func parseExpiry(expiryTimeString string) float64 {
-	expiryTime, _ := strconv.ParseFloat(expiryTimeString, 64)
-	return expiryTime
+func parseExpiry(seconds int) time.Time {
+	currentTime := time.Now()
+	duration := time.Duration(seconds) * time.Second
+	return currentTime.Add(duration)
 }
 func parseByteCount(byteCountString string) int {
 	byteCount, _ := strconv.ParseInt(byteCountString, 10, 32)
@@ -20,19 +21,19 @@ func cacheValueParser(command Command) CacheValue {
 	value := CacheValue{
 		Key:           baseCmd.key,
 		Flags:         baseCmd.flags,
-		ExpiryTime:    baseCmd.expiryTime,
+		ExpiryTime:    parseExpiry(baseCmd.expiryTime),
 		AmountOfBytes: baseCmd.byteCount,
 		CreatedAt:     time.Now(),
 	}
 	return value
 }
 
-func parseDataBlock(cmd Command) (string, error) {
+func parseDataBlock(cmd Command) ([]byte, error) {
 	buf := make([]byte, cmd.GetBaseCommand().byteCount)
 	_, err := cmd.GetBaseCommand().connection.Read(buf)
 	if err != nil {
-		return "", fmt.Errorf("error: %w", err)
+		return nil, fmt.Errorf("error: %w", err)
 	}
 
-	return string(buf), nil
+	return buf, nil
 }

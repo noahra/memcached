@@ -35,7 +35,7 @@ func (cmd PrependCommand) Execute(memcache *Cache) error {
 		return fmt.Errorf("error: %w", err)
 	}
 	currentValue, _ := memcache.Get(value.Key)
-	value.DataBlock = dataBlock + currentValue.DataBlock
+	value.DataBlock = append(dataBlock, currentValue.DataBlock...)
 	amountOfBytes := value.AmountOfBytes
 	value.AmountOfBytes = amountOfBytes + currentValue.AmountOfBytes
 
@@ -61,7 +61,7 @@ func (cmd AppendCommand) Execute(memcache *Cache) error {
 	}
 
 	currentValue, _ := memcache.Get(value.Key)
-	value.DataBlock = currentValue.DataBlock + dataBlock
+	value.DataBlock = append(currentValue.DataBlock, dataBlock...)
 	amountOfBytes := value.AmountOfBytes
 	value.AmountOfBytes = amountOfBytes + currentValue.AmountOfBytes
 	_, ok := memcache.Get(cmd.key)
@@ -143,7 +143,7 @@ func (cmd GetCommand) Execute(memcache *Cache) error {
 	if ok {
 		if !ExpiryCheck(val) {
 			cmd.connection.Write([]byte(fmt.Sprintf("VALUE %s %d %d\n", val.Key, val.Flags, val.AmountOfBytes)))
-			cmd.connection.Write([]byte(val.DataBlock + "\n"))
+			cmd.connection.Write([]byte(fmt.Sprintf("%s\n", val.DataBlock)))
 		} else {
 			memcache.Delete(cmd.key)
 		}

@@ -7,7 +7,7 @@ import (
 type BaseCommand struct {
 	key        string
 	flags      int64
-	expiryTime float64
+	expiryTime int
 	byteCount  int
 	noReply    string
 	connection net.Conn

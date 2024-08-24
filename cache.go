@@ -8,18 +8,16 @@ import (
 type CacheValue struct {
 	Key           string
 	Flags         int64
-	ExpiryTime    float64
+	ExpiryTime    time.Time
 	AmountOfBytes int
-	DataBlock     string
+	DataBlock     []byte
 	CreatedAt     time.Time
 }
 
 func ExpiryCheck(cacheValue CacheValue) bool {
-	if cacheValue.ExpiryTime != 0 {
-		duration := time.Now().Sub(cacheValue.CreatedAt)
-		if duration.Seconds() > cacheValue.ExpiryTime {
-			return true
-		}
+	currentTime := time.Now()
+	if cacheValue.ExpiryTime.After(currentTime) {
+		return true
 	}
 	return false
 }

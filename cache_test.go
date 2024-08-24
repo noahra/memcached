@@ -9,10 +9,10 @@ func TestCacheOperations(t *testing.T) {
 	testCache := NewCache()
 	testCache.Set("key1", CacheValue{
 		Key:           "key1",
-		Flags:         "0",
+		Flags:         0,
 		ExpiryTime:    0,
 		AmountOfBytes: 4,
-		DataBlock:     "test",
+		DataBlock:     []byte("test"),
 		CreatedAt:     time.Now(),
 	})
 	_, doesExist := testCache.Get("key1")

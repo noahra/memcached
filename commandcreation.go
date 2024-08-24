@@ -72,10 +72,14 @@ func createBaseCommand(words []string, conn net.Conn) (BaseCommand, error) {
 	if err != nil {
 		return BaseCommand{}, fmt.Errorf("could not parse flags from command: %w", err)
 	}
+	i, err := strconv.Atoi(words[3])
+	if err != nil {
+		return BaseCommand{}, fmt.Errorf("could not parse int from command: %w", err)
+	}
 	return BaseCommand{
 		key:        words[1],
 		flags:      flags,
-		expiryTime: parseExpiry(words[3]),
+		expiryTime: i,
 		byteCount:  parseByteCount(words[4]),
 		noReply:    words[len(words)-1],
 		connection: conn,

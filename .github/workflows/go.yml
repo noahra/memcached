@@ -29,11 +29,7 @@ jobs:
 
     - name: Install golangci-lint
       run: |
-        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- v1.51.2
-        # Move golangci-lint to a directory in PATH
-        sudo mv golangci-lint /usr/local/bin/
-        # Verify installation
-        golangci-lint --version
+        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.60.3
 
     - name: Run Makefile
       run: |

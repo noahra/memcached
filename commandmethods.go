@@ -41,7 +41,10 @@ func (cmd PrependCommand) Execute(memcache *Cache) error {
 
 	_, ok := memcache.Get(cmd.key)
 	if !ok {
-		writeNotStored(cmd.connection)
+		err := writeNotStored(cmd.connection)
+		if err != nil {
+			return fmt.Errorf("error: %w", err)
+		}
 	} else {
 		memcache.Set(value.Key, value)
 		err := noReplyCheck(cmd)
@@ -55,7 +58,6 @@ func (cmd PrependCommand) Execute(memcache *Cache) error {
 func (cmd AppendCommand) Execute(memcache *Cache) error {
 	value := cacheValueParser(cmd)
 	dataBlock, err := parseDataBlock(cmd)
-
 	if err != nil {
 		return fmt.Errorf("error: %w", err)
 	}
@@ -66,7 +68,10 @@ func (cmd AppendCommand) Execute(memcache *Cache) error {
 	value.AmountOfBytes = amountOfBytes + currentValue.AmountOfBytes
 	_, ok := memcache.Get(cmd.key)
 	if !ok {
-		writeNotStored(cmd.connection)
+		err := writeNotStored(cmd.connection)
+		if err != nil {
+			return fmt.Errorf("error: %w", err)
+		}
 	} else {
 		memcache.Set(value.Key, value)
 		err := noReplyCheck(cmd)
@@ -104,8 +109,12 @@ func (cmd AddCommand) Execute(memcache *Cache) error {
 
 	_, ok := memcache.Get(cmd.key)
 	if ok {
-		writeNotStored(cmd.connection)
+		err := writeNotStored(cmd.connection)
+		if err != nil {
+			return fmt.Errorf("error: %w", err)
+		}
 	} else {
+
 		memcache.Set(value.Key, value)
 		err := noReplyCheck(cmd)
 		if err != nil {
@@ -127,7 +136,10 @@ func (cmd ReplaceCommand) Execute(memcache *Cache) error {
 	_, ok := memcache.Get(cmd.key)
 
 	if !ok {
-		writeNotStored(cmd.connection)
+		err := writeNotStored(cmd.connection)
+		if err != nil {
+			return fmt.Errorf("error: %w", err)
+		}
 	} else {
 		memcache.Set(value.Key, value)
 		err := noReplyCheck(cmd)
@@ -142,12 +154,26 @@ func (cmd GetCommand) Execute(memcache *Cache) error {
 	val, ok := memcache.Get(cmd.key)
 	if ok {
 		if !ExpiryCheck(val) {
-			cmd.connection.Write([]byte(fmt.Sprintf("VALUE %s %d %d\n", val.Key, val.Flags, val.AmountOfBytes)))
-			cmd.connection.Write([]byte(fmt.Sprintf("%s\n", val.DataBlock)))
+			//nolint:errcheck
+			_, err := cmd.connection.Write([]byte(fmt.Sprintf("VALUE %s %d %d\n", val.Key, val.Flags, val.AmountOfBytes)))
+			if err != nil {
+				return fmt.Errorf("err: %w", err)
+			}
+
+			//nolint
+			_, err = cmd.connection.Write([]byte(fmt.Sprintf("%s\n", val.DataBlock)))
+			if err != nil {
+				return fmt.Errorf("err: %w", err)
+			}
 		} else {
 			memcache.Delete(cmd.key)
 		}
-		cmd.connection.Write([]byte("END\r\n"))
+
+		//nolint:errcheck
+		_, err := cmd.connection.Write([]byte("END\r\n"))
+		if err != nil {
+			return fmt.Errorf("err: %w", err)
+		}
 	}
 	return nil
 }

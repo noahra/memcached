@@ -26,6 +26,7 @@ func main() {
 			fmt.Println(err)
 			return
 		}
+
 		go func() {
 			err := HandleConnection(conn, memcache)
 			if err != nil {

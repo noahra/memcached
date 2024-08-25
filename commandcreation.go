@@ -60,11 +60,12 @@ func CreateCommand(words []string, conn net.Conn) (Command, error) {
 		return nil, fmt.Errorf("unknown command: %s", commandType)
 	}
 }
-func writeNotStored(conn net.Conn) {
+func writeNotStored(conn net.Conn) error {
 	_, err := conn.Write([]byte("NOT_STORED\r\n"))
 	if err != nil {
-		fmt.Println(err)
+		return fmt.Errorf("err: %w", err)
 	}
+	return nil
 }
 
 func createBaseCommand(words []string, conn net.Conn) (BaseCommand, error) {

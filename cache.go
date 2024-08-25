@@ -16,10 +16,7 @@ type CacheValue struct {
 
 func ExpiryCheck(cacheValue CacheValue) bool {
 	currentTime := time.Now()
-	if cacheValue.ExpiryTime.After(currentTime) {
-		return true
-	}
-	return false
+	return cacheValue.ExpiryTime.After(currentTime)
 }
 
 type CacheStore interface {
@@ -43,6 +40,7 @@ func (cache *Cache) Set(key string, value CacheValue) {
 	cache.store[key] = value
 	cache.mu.Unlock()
 }
+
 func (cache *Cache) Delete(key string) {
 	cache.mu.Lock()
 	delete(cache.store, key)

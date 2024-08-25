@@ -27,6 +27,11 @@ jobs:
     - name: Test
       run: go test -v ./...
 
+    - name: Install golangci-lint
+      run: |
+        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s v1.60.3
+        sudo mv golangci-lint /usr/local/bin/
+
     - name: Run Makefile
       run: |
         make vet

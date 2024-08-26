@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net"
 	"strings"
 )
@@ -17,7 +18,6 @@ func HandleConnection(conn net.Conn, memcache *Cache) error {
 		"get":     {},
 	}
 	for {
-
 		bytesRead, err := conn.Read(buf[totalBytesRead:])
 		if err != nil {
 			return err
@@ -25,16 +25,8 @@ func HandleConnection(conn net.Conn, memcache *Cache) error {
 		totalBytesRead += bytesRead - 2
 
 		words := strings.Fields(string(buf[:totalBytesRead]))
-
-		if len(words) > 1 && !containsCommand(words[0], commands) {
-			buf = make([]byte, 1024)
-			totalBytesRead = 0
-			continue
-		}
-
-		if len(words) > 6 {
-			buf = make([]byte, 1024)
-			totalBytesRead = 0
+		if (len(words) > 1 && !containsCommand(words[0], commands)) || len(words) > 6 {
+			resetBufferAndBytesRead(&buf, &totalBytesRead)
 			continue
 		}
 
@@ -43,16 +35,11 @@ func HandleConnection(conn net.Conn, memcache *Cache) error {
 			if !ok {
 				continue
 			}
-			command, err := CreateCommand(words, conn)
+			err := createAndExecuteCommand(words, conn, memcache)
 			if err != nil {
-				return err
+				return fmt.Errorf("err: %v", err)
 			}
-			err = command.Execute(memcache)
-			if err != nil {
-				return err
-			}
-			buf = make([]byte, 1024)
-			totalBytesRead = 0
+			resetBufferAndBytesRead(&buf, &totalBytesRead)
 			continue
 		}
 
@@ -60,16 +47,11 @@ func HandleConnection(conn net.Conn, memcache *Cache) error {
 			if len(words) == 6 && words[len(words)-1] != "noreply" {
 				continue
 			}
-			command, err := CreateCommand(words, conn)
+			err := createAndExecuteCommand(words, conn, memcache)
 			if err != nil {
-				return err
+				return fmt.Errorf("err: %v", err)
 			}
-			err = command.Execute(memcache)
-			if err != nil {
-				return err
-			}
-			buf = make([]byte, 1024)
-			totalBytesRead = 0
+			resetBufferAndBytesRead(&buf, &totalBytesRead)
 			continue
 		}
 	}
@@ -78,4 +60,21 @@ func HandleConnection(conn net.Conn, memcache *Cache) error {
 func containsCommand(word string, commands map[string]struct{}) bool {
 	_, exists := commands[word]
 	return exists
+}
+
+func createAndExecuteCommand(words []string, conn net.Conn, memcache *Cache) error {
+	command, err := CreateCommand(words, conn)
+	if err != nil {
+		return err
+	}
+	err = command.Execute(memcache)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func resetBufferAndBytesRead(buf *[]byte, totalBytesRead *int) {
+	*buf = make([]byte, 1024)
+	*totalBytesRead = 0
 }

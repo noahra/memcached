@@ -26,7 +26,10 @@ func HandleConnection(conn net.Conn, memcache *Cache) error {
 		totalBytesRead += bytesRead
 		if idx := bytes.Index(buf[:totalBytesRead], []byte("\r\n")); idx != -1 {
 			// Process the first command
-			processCommand(buf[:idx], memcache, conn, commands)
+			err := processCommand(buf[:idx], memcache, conn, commands)
+			if err != nil {
+				return fmt.Errorf("Error processing command: %v", err)
+			}
 
 			// Calculate the number of remaining bytes
 			remainingBytes := totalBytesRead - (idx + 2)

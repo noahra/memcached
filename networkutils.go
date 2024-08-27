@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"net"
 	"strings"
@@ -22,37 +23,19 @@ func HandleConnection(conn net.Conn, memcache *Cache) error {
 		if err != nil {
 			return err
 		}
-		totalBytesRead += bytesRead - 2
+		totalBytesRead += bytesRead
+		if idx := bytes.Index(buf[:totalBytesRead], []byte("\r\n")); idx != -1 {
+			// Process the first command
+			processCommand(buf[:idx], memcache, conn, commands)
 
-		words := strings.Fields(string(buf[:totalBytesRead]))
-		if (len(words) > 1 && !containsCommand(words[0], commands)) || len(words) > 6 {
-			resetBufferAndBytesRead(&buf, &totalBytesRead)
-			continue
-		}
+			// Calculate the number of remaining bytes
+			remainingBytes := totalBytesRead - (idx + 2)
 
-		if len(words) == 2 && words[0] == "get" {
-			_, ok := memcache.Get(words[1])
-			if !ok {
-				continue
-			}
-			err := createAndExecuteCommand(words, conn, memcache)
-			if err != nil {
-				return fmt.Errorf("err: %v", err)
-			}
-			resetBufferAndBytesRead(&buf, &totalBytesRead)
-			continue
-		}
+			// Move the remaining data to the beginning of the buffer
+			copy(buf, buf[idx+2:totalBytesRead])
 
-		if len(words) >= 5 && containsCommand(words[0], commands) {
-			if len(words) == 6 && words[len(words)-1] != "noreply" {
-				continue
-			}
-			err := createAndExecuteCommand(words, conn, memcache)
-			if err != nil {
-				return fmt.Errorf("err: %v", err)
-			}
-			resetBufferAndBytesRead(&buf, &totalBytesRead)
-			continue
+			// Reset totalBytesRead
+			totalBytesRead = remainingBytes
 		}
 	}
 }
@@ -74,7 +57,32 @@ func createAndExecuteCommand(words []string, conn net.Conn, memcache *Cache) err
 	return nil
 }
 
-func resetBufferAndBytesRead(buf *[]byte, totalBytesRead *int) {
-	*buf = make([]byte, 1024)
-	*totalBytesRead = 0
+func processCommand(buf []byte, memcache *Cache, conn net.Conn, commands map[string]struct{}) error {
+	individualFields := bytes.Fields(buf)
+
+	if len(individualFields) == 0 {
+		return nil
+	}
+	words := strings.Fields(string(buf))
+
+	if len(individualFields) == 2 && bytes.Equal(individualFields[0], []byte("get")) {
+		_, ok := memcache.Get(string(individualFields[1]))
+		if !ok {
+			return nil
+		}
+
+		err := createAndExecuteCommand(words, conn, memcache)
+		if err != nil {
+			return fmt.Errorf("err: %v", err)
+		}
+		return nil
+	}
+
+	if len(words) >= 5 && containsCommand(words[0], commands) {
+		err := createAndExecuteCommand(words, conn, memcache)
+		if err != nil {
+			return fmt.Errorf("err: %v", err)
+		}
+	}
+	return nil
 }
